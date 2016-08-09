@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 class PGoApi:
 
     def __init__(self, provider=None, oauth2_refresh_token=None, username=None, password=None, position_lat=None, position_lng=None, position_alt=None, proxy=None):
+
         self.set_logger()
         self.log.info('%s v%s - %s', __title__, __version__, __copyright__)
 
@@ -63,14 +64,21 @@ class PGoApi:
         self._session.headers.update({'User-Agent': 'Niantic App'})
         self._session.verify = True
 
-        self.proxy=proxy
+        self._signature_lib = None
+
+        self.proxy=None
+
+    def set_proxy(self, proxy):
         if proxy is not None:
+          print "Setting Proxy to : " + proxy
+          self.proxy=proxy
           self._session.proxies={
-            "http" :self.proxy,
-            "https":self.proxy
+            "http" : proxy,
+            "https": proxy,
           }
 
-        self._signature_lib = None
+    def get_proxy(self):
+        return self.proxy
 
     def set_logger(self, logger=None):
         self.log = logger or logging.getLogger(__name__)
