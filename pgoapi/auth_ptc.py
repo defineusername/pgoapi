@@ -47,18 +47,26 @@ class AuthPtc(Auth):
 
     def __init__(self):
         Auth.__init__(self)
-        
+
         self._auth_provider = 'ptc'
-        
+
         self._session = requests.session()
         self._session.verify = True
+
+    def set_proxy(self, proxy):
+        if proxy is not None:
+          print "Setting AuthPTC Proxy to : " + proxy
+          self._session.proxies={
+            "http" : proxy,
+            "https": proxy,
+          }
 
     def user_login(self, username, password):
         self.log.info('PTC User Login for: {}'.format(username))
 
         if not isinstance(username, six.string_types) or not isinstance(password, six.string_types):
             raise AuthException("Username/password not correctly specified")
-        
+
         head = {'User-Agent': 'niantic'}
         r = self._session.get(self.PTC_LOGIN_URL, headers=head)
 
@@ -118,12 +126,12 @@ class AuthPtc(Auth):
                 'grant_type': 'refresh_token',
                 'code': self._refresh_token,
             }
-            
+
             r2 = self._session.post(self.PTC_LOGIN_OAUTH, data=data1)
 
             qs = r2.content.decode('utf-8')
             token_data = parse_qs(qs)
-            
+
             access_token = token_data.get('access_token', None)
             if access_token is not None:
                 self._access_token = access_token[0]
@@ -145,4 +153,4 @@ class AuthPtc(Auth):
                 raise AuthException("Could not retrieve a PTC Access Token")
 
 
-        
+
