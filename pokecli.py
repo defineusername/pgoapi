@@ -103,7 +103,8 @@ def main():
 
 
     # instantiate pgoapi
-    api = pgoapi.PGoApi()
+    # proxy="http://user:password@ip:port/" do not include
+    api = pgoapi.PGoApi(proxy=None)
 
     # parse position
     position = util.get_pos_by_name(config.location)
@@ -119,8 +120,8 @@ def main():
     # new authentication initialitation
     api.set_authentication(provider = config.auth_service, username = config.username, password =  config.password)
 
-    # provide the path for your encrypt dll
-    api.activate_signature("encrypt.dll")
+    # provide the path for your encrypt dll/so
+    api.activate_signature("encrypt.so")
 
     # print get maps object
     cell_ids = util.get_cell_ids(position[0], position[1])
