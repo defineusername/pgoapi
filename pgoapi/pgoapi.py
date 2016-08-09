@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 class PGoApi:
 
-    def __init__(self, provider=None, oauth2_refresh_token=None, username=None, password=None, position_lat=None, position_lng=None, position_alt=None):
+    def __init__(self, provider=None, oauth2_refresh_token=None, username=None, password=None, position_lat=None, position_lng=None, position_alt=None, proxy=None):
         self.set_logger()
         self.log.info('%s v%s - %s', __title__, __version__, __copyright__)
 
@@ -59,6 +59,17 @@ class PGoApi:
         self._position_lng = position_lng
         self._position_alt = position_alt
 
+        self._session = requests.session()
+        self._session.headers.update({'User-Agent': 'Niantic App'})
+        self._session.verify = True
+
+        self.proxy=proxy
+        if proxy is not None:
+          self._session.proxies={
+            "http" :self.proxy,
+            "https":self.proxy
+          }
+
         self._signature_lib = None
 
     def set_logger(self, logger=None):
@@ -67,6 +78,7 @@ class PGoApi:
     def set_authentication(self, provider=None, oauth2_refresh_token=None, username=None, password=None):
         if provider == 'ptc':
             self._auth_provider = AuthPtc()
+            self._auth_provider.set_proxy(proxy=self.proxy)
         elif provider == 'google':
             self._auth_provider = AuthGoogle()
         elif provider is None:
@@ -204,6 +216,7 @@ class PGoApiRequest:
             return NotLoggedInException()
 
         request = RpcApi(self._auth_provider)
+        request._session = self.__parent__._session
 
         lib_path = self.__parent__.get_signature_lib()
         if lib_path is not None:
